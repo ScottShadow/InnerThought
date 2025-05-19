@@ -5,7 +5,7 @@ import { isAuthenticated } from "./auth";
 
 // Initialize Stripe
 const stripeClient = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" })
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
 export function setupStripeRoutes(app: Router) {
@@ -23,13 +23,13 @@ export function setupStripeRoutes(app: Router) {
       }
 
       // Create a Stripe customer if the user doesn't have one
-      let customerId = req.user.stripeCustomerId;
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      let customerId = user.stripeCustomerId;
       if (!customerId) {
-        const user = await storage.getUser(req.user.id);
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
-        }
-
         const customer = await stripeClient.customers.create({
           email: user.email || undefined,
           name: user.displayName || user.username,

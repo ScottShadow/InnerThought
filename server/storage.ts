@@ -27,6 +27,7 @@ export interface IStorage {
   getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserSubscription(userId: number, isSubscribed: boolean, expiryDate?: Date): Promise<User | undefined>;
+  updateUserStripeCustomerId(userId: number, customerId: string): Promise<User | undefined>;
 
   // Entry methods
   createEntry(entry: InsertEntry): Promise<Entry>;
@@ -131,6 +132,21 @@ export class MemStorage implements IStorage {
       ...user,
       isSubscribed,
       subscriptionExpiry: expiryDate || null
+    };
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async updateUserStripeCustomerId(userId: number, customerId: string): Promise<User | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      return undefined;
+    }
+    
+    const updatedUser: User = {
+      ...user,
+      stripeCustomerId: customerId
     };
     
     this.users.set(userId, updatedUser);
@@ -325,6 +341,17 @@ export class DatabaseStorage implements IStorage {
       .set({
         isSubscribed,
         subscriptionExpiry: expiryDate || null,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser || undefined;
+  }
+  
+  async updateUserStripeCustomerId(userId: number, customerId: string): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        stripeCustomerId: customerId,
       })
       .where(eq(users.id, userId))
       .returning();

@@ -4,27 +4,28 @@ import Sidebar from "@/components/Sidebar";
 import EmotionalTimeline from "@/components/EmotionalTimeline";
 import ThemePatterns from "@/components/ThemePatterns";
 import StarredIdeas from "@/components/StarredIdeas";
+import SubscriptionRequiredOverlay from "@/components/SubscriptionRequiredOverlay";
 import { useLocation } from "wouter";
 
 export default function Insights() {
   const [_, navigate] = useLocation();
 
   // Fetch all entries for insights
-  // Fetch entries
-  const { data = { entries: [], insights: [] }, isLoading } = useQuery<{
+  const { data: entriesData = { results: [], insights: [] }, isLoading } = useQuery<{
     results: EntryWithAnalysis[];
     insights: Insight[];
   }>({
     queryKey: ["/api/entries"],
-    select: (data) => ({
-      entries: data.results,
-      insights: data.insights, // grab both
-    }),
   });
-  const { entries, insights } = data as {
-    entries: EntryWithAnalysis[];
-    insights: Insight[];
-  };
+  
+  // Fetch user subscription status
+  const { data: subscriptionData } = useQuery<{ isSubscribed: boolean }>({
+    queryKey: ["/api/subscriptions/status"],
+  });
+  
+  const isSubscribed = subscriptionData?.isSubscribed || false;
+  const entries = entriesData.results;
+  const insights = entriesData.insights;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -43,12 +44,13 @@ export default function Insights() {
             </div>
 
             {/* Theme Patterns */}
-            <div className="mb-8">
+            <div className="mb-8 relative">
               <ThemePatterns
                 entries={entries}
                 insights={insights}
                 isLoading={isLoading}
               />
+              <SubscriptionRequiredOverlay isSubscribed={isSubscribed} />
             </div>
 
             {/* Starred Ideas */}
