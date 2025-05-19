@@ -24,7 +24,9 @@ export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserSubscription(userId: number, isSubscribed: boolean, expiryDate?: Date): Promise<User | undefined>;
 
   // Entry methods
   createEntry(entry: InsertEntry): Promise<Entry>;
@@ -94,12 +96,45 @@ export class MemStorage implements IStorage {
       (user) => user.username === username,
     );
   }
+  
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.googleId === googleId,
+    );
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      password: insertUser.password || null,
+      email: insertUser.email || null,
+      googleId: insertUser.googleId || null,
+      displayName: insertUser.displayName || null,
+      profilePicture: insertUser.profilePicture || null,
+      isSubscribed: insertUser.isSubscribed || false,
+      subscriptionExpiry: null,
+      stripeCustomerId: null
+    };
     this.users.set(id, user);
     return user;
+  }
+  
+  async updateUserSubscription(userId: number, isSubscribed: boolean, expiryDate?: Date): Promise<User | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) {
+      return undefined;
+    }
+    
+    const updatedUser: User = {
+      ...user,
+      isSubscribed,
+      subscriptionExpiry: expiryDate || null
+    };
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
   }
 
   // Entry methods
@@ -270,10 +305,30 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.username, username));
     return user || undefined;
   }
+  
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.googleId, googleId));
+    return user || undefined;
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+  
+  async updateUserSubscription(userId: number, isSubscribed: boolean, expiryDate?: Date): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        isSubscribed,
+        subscriptionExpiry: expiryDate || null,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser || undefined;
   }
 
   // Entry methods
