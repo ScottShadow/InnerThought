@@ -12,6 +12,7 @@ import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import Subscribe from "@/pages/Subscribe";
+import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import { useEffect } from "react";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -42,6 +43,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/signup" component={Signup} />
       <Route path="/subscribe" component={Subscribe} />
+      <Route path="/subscription-success" component={SubscriptionSuccess} />
       <Route path="/">
         <AuthGuard>
           <Home />

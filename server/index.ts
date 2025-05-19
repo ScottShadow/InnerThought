@@ -1,10 +1,20 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { setupAuth } from "./auth";
+import { setupStripeRoutes } from "./stripe";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Set up authentication
+setupAuth(app);
+
+// Set up subscriptions
+const subscriptionRouter = express.Router();
+setupStripeRoutes(subscriptionRouter);
+app.use('/api/subscriptions', subscriptionRouter);
 
 app.use((req, res, next) => {
   const start = Date.now();
