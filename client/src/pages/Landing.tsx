@@ -33,7 +33,7 @@ export default function Landing() {
           Track Your Emotional Journey
         </h1>
         <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mb-8">
-          Discover patterns in your thoughts, track emotional changes, and gain insights into your mental well-being.
+          InnerThought helps you discover patterns in your thoughts, track emotional changes, and gain insights into your mental well-being.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <Link href="/signup">
