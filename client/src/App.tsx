@@ -15,6 +15,8 @@ import Subscribe from "@/pages/Subscribe";
 import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import { useEffect } from "react";
 
+import Navbar from "@/components/Navbar";
+
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const [, navigate] = useLocation();
   
@@ -33,7 +35,12 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
   
-  return user ? <>{children}</> : null;
+  return user ? (
+    <>
+      <Navbar />
+      {children}
+    </>
+  ) : null;
 }
 
 function Router() {
