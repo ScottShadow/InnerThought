@@ -399,6 +399,9 @@ export class DatabaseStorage implements IStorage {
     
     return {
       ...entry,
+      // Ensure boolean values are always defined
+      isStarred: entry.isStarred === null ? false : entry.isStarred,
+      clarityRating: entry.clarityRating === null ? 0 : entry.clarityRating,
       emotions: entryEmotions,
       themes: entryThemes
     };
@@ -413,6 +416,8 @@ export class DatabaseStorage implements IStorage {
       const entryThemes = await this.getThemesByEntryId(entry.id);
       results.push({
         ...entry,
+        isStarred: entry.isStarred === null ? false : entry.isStarred,
+        clarityRating: entry.clarityRating === null ? 0 : entry.clarityRating,
         emotions: entryEmotions,
         themes: entryThemes
       });
@@ -430,6 +435,8 @@ export class DatabaseStorage implements IStorage {
       const entryThemes = await this.getThemesByEntryId(entry.id);
       results.push({
         ...entry,
+        isStarred: entry.isStarred === null ? false : entry.isStarred,
+        clarityRating: entry.clarityRating === null ? 0 : entry.clarityRating,
         emotions: entryEmotions,
         themes: entryThemes
       });

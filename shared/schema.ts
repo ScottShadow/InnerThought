@@ -22,8 +22,8 @@ export const entries = pgTable("entries", {
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  isStarred: boolean("is_starred").default(false),
-  clarityRating: integer("clarity_rating").default(0),
+  isStarred: boolean("is_starred").default(false).notNull(),
+  clarityRating: integer("clarity_rating").default(0).notNull(),
 });
 
 export const insertEntrySchema = createInsertSchema(entries).pick({
@@ -68,8 +68,8 @@ export const entryWithAnalysisSchema = z.object({
   content: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
-  isStarred: z.boolean().nullable().transform(val => val === null ? false : val),
-  clarityRating: z.number().nullable().transform(val => val === null ? 0 : val),
+  isStarred: z.boolean(),
+  clarityRating: z.number(),
   emotions: z.array(z.object({
     id: z.number(),
     entryId: z.number(),
