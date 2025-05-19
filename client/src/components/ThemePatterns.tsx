@@ -130,13 +130,14 @@ export default function ThemePatterns({ entries, isLoading = false }: ThemePatte
                 {sortedThemes.slice(0, 8).map((themeData, index) => (
                   <div 
                     key={index}
-                    className={`heatmap-cell aspect-square bg-primary rounded flex items-center justify-center text-white text-xs p-2 cursor-pointer`}
+                    className={`heatmap-cell aspect-square rounded flex items-center justify-center text-white text-xs p-2 cursor-pointer overflow-hidden`}
                     style={{ 
-                      opacity: Math.max(0.1, Math.min(0.9, themeData.percentage / 100))
+                      backgroundColor: `hsl(${(index * 30) % 360}, 70%, 50%)`,
+                      opacity: Math.max(0.5, Math.min(0.95, themeData.percentage / 100))
                     }}
-                    title={`${themeData.theme}: ${themeData.count} mentions`}
+                    title={`${themeData.theme}: ${themeData.count} mentions (${themeData.percentage}%)`}
                   >
-                    {themeData.theme}
+                    <span className="line-clamp-2 text-center">{themeData.theme}</span>
                   </div>
                 ))}
                 
