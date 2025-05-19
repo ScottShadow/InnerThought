@@ -68,15 +68,17 @@ export const entryWithAnalysisSchema = z.object({
   content: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
-  isStarred: z.boolean(),
-  clarityRating: z.number(),
+  isStarred: z.boolean().nullable().transform(val => val === null ? false : val),
+  clarityRating: z.number().nullable().transform(val => val === null ? 0 : val),
   emotions: z.array(z.object({
     id: z.number(),
+    entryId: z.number(),
     emotion: z.string(),
     score: z.number(),
   })).optional(),
   themes: z.array(z.object({
     id: z.number(),
+    entryId: z.number(),
     theme: z.string(),
   })).optional(),
 });
