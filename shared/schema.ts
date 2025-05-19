@@ -14,12 +14,24 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  password: text("password"),
+  email: text("email").unique(),
+  googleId: text("google_id").unique(),
+  displayName: text("display_name"),
+  profilePicture: text("profile_picture"),
+  isSubscribed: boolean("is_subscribed").default(false).notNull(),
+  subscriptionExpiry: timestamp("subscription_expiry"),
+  stripeCustomerId: text("stripe_customer_id").unique(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  email: true,
+  googleId: true,
+  displayName: true,
+  profilePicture: true,
+  isSubscribed: true,
 });
 
 // Journal entries schema
