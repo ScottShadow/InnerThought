@@ -57,12 +57,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create a new entry with analysis
-  app.post("/api/entries", async (req: Request, res: Response) => {
+  app.post("/api/entries", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       // Validate request body
       const validatedData = insertEntrySchema.parse({
         ...req.body,
-        userId: 1, // default user
+        userId: req.user.id, // use authenticated user's ID
       });
 
       // Create the entry
@@ -96,8 +100,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update an entry
-  app.put("/api/entries/:id", async (req: Request, res: Response) => {
+  app.put("/api/entries/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid entry ID" });
@@ -107,6 +115,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingEntry = await storage.getEntryById(id);
       if (!existingEntry) {
         return res.status(404).json({ message: "Entry not found" });
+      }
+      
+      // Check if the entry belongs to the authenticated user
+      if (existingEntry.userId !== req.user.id) {
+        return res.status(403).json({ message: "You do not have permission to update this entry" });
       }
 
       // Validate request body - partial for updates
@@ -151,8 +164,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete an entry
-  app.delete("/api/entries/:id", async (req: Request, res: Response) => {
+  app.delete("/api/entries/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid entry ID" });
@@ -162,6 +179,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const entry = await storage.getEntryById(id);
       if (!entry) {
         return res.status(404).json({ message: "Entry not found" });
+      }
+      
+      // Check if the entry belongs to the authenticated user
+      if (entry.userId !== req.user.id) {
+        return res.status(403).json({ message: "You do not have permission to delete this entry" });
       }
 
       // Delete the entry (this also deletes associated emotions and themes)
@@ -174,10 +196,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get starred entries
-  app.get("/api/entries/starred", async (req: Request, res: Response) => {
+  app.get("/api/entries/starred", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      // For now, use a default user ID (1)
-      const userId = 1;
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const userId = req.user.id;
       const entries = await storage.getStarredEntriesWithAnalysis(userId);
       res.json(entries);
     } catch (error) {
@@ -187,8 +212,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Toggle star status
-  app.patch("/api/entries/:id/star", async (req: Request, res: Response) => {
+  app.patch("/api/entries/:id/star", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid entry ID" });
@@ -198,6 +227,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const entry = await storage.getEntryById(id);
       if (!entry) {
         return res.status(404).json({ message: "Entry not found" });
+      }
+      
+      // Check if the entry belongs to the authenticated user
+      if (entry.userId !== req.user.id) {
+        return res.status(403).json({ message: "You do not have permission to update this entry" });
       }
 
       // Toggle star status
@@ -213,8 +247,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update clarity rating
-  app.patch("/api/entries/:id/clarity", async (req: Request, res: Response) => {
+  app.patch("/api/entries/:id/clarity", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid entry ID" });
@@ -223,6 +261,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate rating
       const ratingSchema = z.object({ rating: z.number().min(0).max(5) });
       const { rating } = ratingSchema.parse(req.body);
+      
+      // Get existing entry to check ownership
+      const entry = await storage.getEntryById(id);
+      if (!entry) {
+        return res.status(404).json({ message: "Entry not found" });
+      }
+      
+      // Check if the entry belongs to the authenticated user
+      if (entry.userId !== req.user.id) {
+        return res.status(403).json({ message: "You do not have permission to update this entry" });
+      }
 
       // Update rating
       const updatedEntry = await storage.updateEntry(id, {
