@@ -20,7 +20,7 @@ interface EntryEditorProps {
 export default function EntryEditor({ entry, isNew = false, onSave, onCancel }: EntryEditorProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // Initialize state from entry or with defaults
   const [title, setTitle] = useState(entry?.title || "");
   const [content, setContent] = useState(entry?.content || "");
@@ -158,7 +158,7 @@ export default function EntryEditor({ entry, isNew = false, onSave, onCancel }: 
   // Handle form submission
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
+
     // Validate form
     if (!title.trim()) {
       toast({
@@ -168,7 +168,7 @@ export default function EntryEditor({ entry, isNew = false, onSave, onCancel }: 
       });
       return;
     }
-    
+
     if (!content.trim()) {
       toast({
         title: "Missing content",
@@ -177,9 +177,9 @@ export default function EntryEditor({ entry, isNew = false, onSave, onCancel }: 
       });
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       if (isNew) {
         await createMutation.mutateAsync({ title, content, isStarred, clarityRating });
@@ -201,7 +201,7 @@ export default function EntryEditor({ entry, isNew = false, onSave, onCancel }: 
 
   function handleDelete() {
     if (!entry) return;
-    
+
     if (window.confirm("Are you sure you want to delete this entry? This action cannot be undone.")) {
       deleteMutation.mutate(entry.id);
     }
@@ -230,7 +230,7 @@ export default function EntryEditor({ entry, isNew = false, onSave, onCancel }: 
             <span>{entry ? formatDateAndTime(new Date(entry.createdAt)) : formatDateAndTime(new Date())}</span>
           </div>
         </div>
-        
+
         <div className="flex space-x-2">
           <Button
             type="button"
@@ -241,7 +241,7 @@ export default function EntryEditor({ entry, isNew = false, onSave, onCancel }: 
           >
             <Star className={`h-5 w-5 ${isStarred ? "fill-yellow-400 text-yellow-400" : ""}`} />
           </Button>
-          
+
           {!isNew && (
             <Button
               type="button"
@@ -255,13 +255,13 @@ export default function EntryEditor({ entry, isNew = false, onSave, onCancel }: 
           )}
         </div>
       </div>
-      
+
       {/* Rich Text Editor */}
       <RichTextEditor 
         value={content}
         onChange={setContent}
       />
-      
+
       {/* Analysis Section */}
       {(!isNew || content.length > 50) && (
         <div className="border-t border-neutral-200 dark:border-gray-700 pt-6 mt-6">
@@ -273,7 +273,7 @@ export default function EntryEditor({ entry, isNew = false, onSave, onCancel }: 
           />
         </div>
       )}
-      
+
       {/* Save Button */}
       <div className="mt-6 flex justify-end space-x-4">
         {onCancel && (

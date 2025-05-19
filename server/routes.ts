@@ -2,7 +2,12 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertEntrySchema, insertEmotionSchema, insertThemeSchema, analysisSchema } from "@shared/schema";
+import {
+  insertEntrySchema,
+  insertEmotionSchema,
+  insertThemeSchema,
+  analysisSchema,
+} from "@shared/schema";
 import { analyzeJournalEntry } from "./openai";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -13,6 +18,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = 1;
       const entries = await storage.getEntriesWithAnalysisByUserId(userId);
       res.json(entries);
+      //console.log("Entries fetched:", entries);
     } catch (error) {
       console.error("Error fetching entries:", error);
       res.status(500).json({ message: "Failed to fetch entries" });
@@ -55,17 +61,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const analysis = await analyzeJournalEntry(entry.content);
 
       // Add emotions to the entry
-      const emotionsToInsert = analysis.emotions.map(emotion => ({
+      const emotionsToInsert = analysis.emotions.map((emotion) => ({
         entryId: entry.id,
         emotion: emotion.name,
-        score: emotion.score
+        score: emotion.score,
       }));
       await storage.addEmotions(emotionsToInsert);
 
       // Add themes to the entry
-      const themesToInsert = analysis.themes.map(theme => ({
+      const themesToInsert = analysis.themes.map((theme) => ({
         entryId: entry.id,
-        theme
+        theme,
       }));
       await storage.addThemes(themesToInsert);
 
@@ -106,17 +112,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.deleteThemesByEntryId(id);
 
         // Add new emotions
-        const emotionsToInsert = analysis.emotions.map(emotion => ({
+        const emotionsToInsert = analysis.emotions.map((emotion) => ({
           entryId: id,
           emotion: emotion.name,
-          score: emotion.score
+          score: emotion.score,
         }));
         await storage.addEmotions(emotionsToInsert);
 
         // Add new themes
-        const themesToInsert = analysis.themes.map(theme => ({
+        const themesToInsert = analysis.themes.map((theme) => ({
           entryId: id,
-          theme
+          theme,
         }));
         await storage.addThemes(themesToInsert);
       }
@@ -185,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Toggle star status
       const updatedEntry = await storage.updateEntry(id, {
-        isStarred: !entry.isStarred
+        isStarred: !entry.isStarred,
       });
 
       res.json(updatedEntry);
@@ -209,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update rating
       const updatedEntry = await storage.updateEntry(id, {
-        clarityRating: rating
+        clarityRating: rating,
       });
 
       if (!updatedEntry) {

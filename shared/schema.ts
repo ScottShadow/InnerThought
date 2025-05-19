@@ -1,4 +1,12 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  integer,
+  boolean,
+  timestamp,
+  json,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -70,28 +78,46 @@ export const entryWithAnalysisSchema = z.object({
   updatedAt: z.date(),
   isStarred: z.boolean(),
   clarityRating: z.number(),
-  emotions: z.array(z.object({
-    id: z.number(),
-    entryId: z.number(),
-    emotion: z.string(),
-    score: z.number(),
-  })).optional(),
-  themes: z.array(z.object({
-    id: z.number(),
-    entryId: z.number(),
-    theme: z.string(),
-  })).optional(),
+  emotions: z
+    .array(
+      z.object({
+        id: z.number(),
+        entryId: z.number(),
+        emotion: z.string(),
+        score: z.number(),
+      }),
+    )
+    .optional(),
+  themes: z
+    .array(
+      z.object({
+        id: z.number(),
+        entryId: z.number(),
+        theme: z.string(),
+      }),
+    )
+    .optional(),
 });
 
 // OpenAI Analysis schema for internal use
 export const analysisSchema = z.object({
-  emotions: z.array(z.object({
-    name: z.string(),
-    score: z.number()
-  })),
+  emotions: z.array(
+    z.object({
+      name: z.string(),
+      score: z.number(),
+    }),
+  ),
   themes: z.array(z.string()),
 });
 
+export const InsightSchema = z.array(
+  z.object({
+    title: z.string(),
+    description: z.string(),
+    suggestedColor: z.string(),
+    derivedEntryCount: z.number().int().min(0),
+  }),
+);
 // Export types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -107,3 +133,4 @@ export type InsertTheme = z.infer<typeof insertThemeSchema>;
 
 export type EntryWithAnalysis = z.infer<typeof entryWithAnalysisSchema>;
 export type Analysis = z.infer<typeof analysisSchema>;
+export type Insight = z.infer<typeof InsightSchema>;
