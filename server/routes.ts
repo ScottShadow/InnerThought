@@ -9,16 +9,18 @@ import {
   analysisSchema,
 } from "@shared/schema";
 import { analyzeJournalEntry } from "./openai";
+import { isAuthenticated } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all entries (with analysis)
-  app.get("/api/entries", async (req: Request, res: Response) => {
+  app.get("/api/entries", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      // For now, use a default user ID (1)
-      const userId = 1;
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      const userId = req.user.id;
       const entries = await storage.getEntriesWithAnalysisByUserId(userId);
       res.json(entries);
-      //console.log("Entries fetched:", entries);
     } catch (error) {
       console.error("Error fetching entries:", error);
       res.status(500).json({ message: "Failed to fetch entries" });
@@ -26,8 +28,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get a single entry with analysis
-  app.get("/api/entries/:id", async (req: Request, res: Response) => {
+  app.get("/api/entries/:id", isAuthenticated, async (req: Request, res: Response) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid entry ID" });
@@ -36,6 +42,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const entry = await storage.getEntryWithAnalysis(id);
       if (!entry) {
         return res.status(404).json({ message: "Entry not found" });
+      }
+      
+      // Ensure the entry belongs to the authenticated user
+      if (entry.userId !== req.user.id) {
+        return res.status(403).json({ message: "You do not have permission to access this entry" });
       }
 
       res.json(entry);

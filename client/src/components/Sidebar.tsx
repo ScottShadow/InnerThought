@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import {
   EntryWithAnalysis,
-  analysisReturnSchema,
   Insight,
 } from "@shared/schema";
 import { formatRelativeTime } from "@/lib/dateUtils";
@@ -39,20 +38,25 @@ export default function Sidebar({ onNewEntry }: SidebarProps) {
   }, [isMobile]);
 
   // Fetch entries
-  const { data = { entries: [], insights: [] } } = useQuery<{
+  const { data: entriesData = { results: [], insights: [] } } = useQuery<{
     results: EntryWithAnalysis[];
     insights: Insight[];
   }>({
     queryKey: ["/api/entries"],
-    select: (data) => ({
-      entries: data.results,
-      insights: data.insights, // grab both
-    }),
   });
-  const { entries, insights } = data as {
-    entries: EntryWithAnalysis[];
-    insights: Insight[];
-  }; // Filter entries based on search text
+  
+  // Get user data
+  const { data: userData } = useQuery<{
+    id: number;
+    username: string;
+    displayName?: string;
+    isSubscribed?: boolean;
+  }>({
+    queryKey: ["/api/auth/user"],
+  });
+  // Extract entries and insights
+  const entries = entriesData.results || [];
+  const insights = entriesData.insights || [];
   const filteredEntries = entries.filter(
     (entry) =>
       searchText === "" ||
@@ -248,12 +252,20 @@ export default function Sidebar({ onNewEntry }: SidebarProps) {
       {/* User Profile */}
       <div className="p-4 border-t border-neutral-200 dark:border-gray-700 flex items-center">
         <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center mr-3">
-          <span className="text-sm font-medium">JS</span>
+          <span className="text-sm font-medium">
+            {userData?.displayName 
+              ? userData.displayName.substring(0, 2).toUpperCase() 
+              : userData?.username 
+                ? userData.username.substring(0, 2).toUpperCase()
+                : "U"}
+          </span>
         </div>
         <div>
-          <p className="text-sm font-medium">InnerThought User</p>
+          <p className="text-sm font-medium">
+            {userData?.displayName || userData?.username || "InnerThought User"}
+          </p>
           <p className="text-xs text-neutral-400 dark:text-gray-500">
-            Free Plan
+            {userData?.isSubscribed ? "Premium Plan" : "Free Plan"}
           </p>
         </div>
         <div className="ml-auto flex space-x-2">
