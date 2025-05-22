@@ -41,7 +41,7 @@ export default function Subscribe() {
           <Button variant="ghost" onClick={() => navigate("/")}>
             ← Back to Home
           </Button>
-          <div className="text-2xl font-bold text-blue-600">MindJournal</div>
+          <div className="text-2xl font-bold text-blue-600">InnerThought</div>
         </div>
       </header>
 
