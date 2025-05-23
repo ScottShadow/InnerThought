@@ -10,8 +10,12 @@ import {
 } from "@shared/schema";
 import { analyzeJournalEntry } from "./openai";
 import { isAuthenticated } from "./auth";
+import * as path from 'path';
 
 export async function registerRoutes(app: Express): Promise<Server> {
+    app.get("/PrivacyPolicy", (_req, res) => {
+  res.sendFile(path.join(import.meta.dirname, "../public/privacy-policy.html"));
+});
   // Get all entries (with analysis)
   app.get("/api/entries", isAuthenticated, async (req: Request, res: Response) => {
     try {
