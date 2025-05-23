@@ -101,7 +101,7 @@ export default function Login() {
             <p className="text-sm text-gray-500 mb-4">Or continue with</p>
             <Button 
               variant="outline" 
-              className="w-full"
+              className="w-full hidden"
               onClick={() => window.location.href = "/api/auth/google"}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
