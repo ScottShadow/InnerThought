@@ -553,7 +553,7 @@ Using this limited but insightful data, generate 2 to 3 personalized insights th
     let insights: Insight[] = [];
     try {
       insights = await geminiRequest(prompt, InsightSchema);
-      console.log(insights);
+      //console.log(insights);
     } catch (err) {
       console.warn("Failed to fetch insights:", err);
       insights = [
