@@ -10,7 +10,6 @@ import { useState } from "react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
@@ -126,7 +125,6 @@ export default function Login() {
               Continue with Google
             </Button>
           </div>
-          
           <div className="mt-6 text-center text-sm">
             <p className="text-gray-600">
               Don't have an account?{" "}
@@ -136,7 +134,7 @@ export default function Login() {
             </p>
             <p className="text-gray-600">
               By logging in, you agree to our{" "}
-              <a href="/PrivacyPolicy" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+              <a href="/PrivacyPolicy.html" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
                 Terms of Service
               </a>
 
